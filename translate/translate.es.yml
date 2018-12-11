@@ -1,0 +1,48 @@
+button_save: Guardar
+tab_settings: Ajustes CRM
+tab_bots: Bot
+table_url: URL
+table_token: Token
+table_activity: Marca de actividad
+api_key: API key
+api_url: URL de CRM
+add_bot: Añadir un bot
+title: Módulo de conexión de mg-bot con retailCRM
+successful: Datos actualizados con éxito
+language: Idioma
+
+no_bot_token: Introducir token
+no_bot_url: Introducir URL
+wrong_data: Datos erróneos
+set_method: Establecer método POST
+bot_already_created: El bot está creado
+not_found_account: Cuenta no encontrada, contacte con el soporte técnico
+error_activating_channel: Error al activar un canal
+error_deactivating_channel: Error al desactivar un canal
+incorrect_url_key: Introduzca la URL correcta o el  API key
+error_creating_integration: Error al integrar
+error_creating_connection: Error al establecer la conexión
+connection_already_created: Conexión establecida con éxito
+missing_url_key: Faltan la URL y  API key
+incorrect_url: Introduzca la URL correcta de CRM
+incorrect_key: "[Introduzca la API key correcta]"
+incorrect_token: Cree el token correcto
+error_creating_webhook: Error al crear el webhook
+error_adding_bot: Error al añadir un bot
+error_save: Error al guardar, contacte con el soporte técnico
+error_delete: Error al eliminar, póngase en contacto con el soporte técnico
+missing_credentials: "Required methods: {{.Credentials}}"
+error_activity_mg: Compruebe que la integración con  retailCRM Chat está habilitada en Ajustes de CRM
+
+crm_link: "<a href='//www.retailcrm.pro' title='retailCRM'>retailCRM</a>"
+doc_link: "<a href='//www.retailcrm.pro/docs' target='_blank'>documentación</a>"
+
+set_name_or_article: Indique el nombre o el número de artículo
+product_response: "Nombre: {{.Name}}\nStock: {{.Quantity}} piezas\nPrecio: {{.Price}} {{.Currency}}\nImagen: {{.ImageURL}}"
+not_found: No se encontró nada con los parámetros especificados
+get_payment: Obtener tipos de pago disponibles
+get_delivery: Obtener tipos de entrega disponibles
+get_product: Recibir los productos por el artículo o el nombre
+payment_options: "Opciones de pago:"
+delivery_options: "Opciones de entrega:"
+pieces: "piezas"

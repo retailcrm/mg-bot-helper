@@ -1,0 +1,26 @@
+{{define "body"}}
+    <div class="row indent-top home">
+        <form class="tab-el-center" method="POST" id="save-crm" action="/create/">
+            <div id="msg"></div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <input placeholder="CRM Url" id="api_url" name="api_url" type="text" class="validate"
+                        {{if .Conn.APIURL}} value="{{.Conn.APIURL}}" {{end}}>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <input placeholder="{{.Locale.ApiKey}}" id="api_key" name="api_key" type="text" class="validate">
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12 center-align">
+                    <button class="btn waves-effect waves-light red lighten-1" type="submit" name="action">
+                        {{.Locale.ButtonSave}}
+                        <i class="material-icons right">sync</i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+{{end}}

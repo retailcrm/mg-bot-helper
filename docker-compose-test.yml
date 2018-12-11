@@ -1,0 +1,25 @@
+version: '2.1'
+
+services:
+    postgres_test:
+        image: postgres:9.6
+        environment:
+            POSTGRES_USER: mg_bot_test
+            POSTGRES_PASSWORD: mg_bot_test
+            POSTGRES_DATABASE: mg_bot_test
+        ports:
+            - ${POSTGRES_ADDRESS:-127.0.0.1:5434}:${POSTGRES_PORT:-5432}
+
+    mg_bot_test:
+        image: golang:1.11-stretch
+        working_dir: /mg-bot
+        user: ${UID:-1000}:${GID:-1000}
+        environment:
+            GOCACHE: /go
+        volumes:
+            - ./:/mg-bot/
+            - ./static:/static/
+        links:
+            - postgres_test
+        ports:
+            - ${mg_bot_ADDRESS:-3002}:3002

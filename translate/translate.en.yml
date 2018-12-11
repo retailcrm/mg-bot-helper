@@ -1,0 +1,48 @@
+button_save: Save
+tab_settings: CRM settings
+tab_bots: Bot
+table_url: URL
+table_token: Token
+table_activity: Activity mark
+api_key: API key
+api_url: URL of CRM
+add_bot: Add a bot
+title: Module of connecting mg-bot to retailCRM
+successful: Data was updated successfully
+language: Language
+
+no_bot_token: Enter token
+no_bot_url: Enter URL
+wrong_data: Wrong data
+set_method: Set POST method
+bot_already_created: Bot is already created
+not_found_account: Account is not found, contact technical support
+error_activating_channel: Error when activating a channel
+error_deactivating_channel: Error when deactivating a channel
+incorrect_url_key: Enter the correct URL or API key
+error_creating_integration: Error when integrating
+error_creating_connection: Error when establishing a connection
+connection_already_created: Connection is already established
+missing_url_key: URL and API key are missing
+incorrect_url: Enter the correct URL of CRM
+incorrect_key: "[Enter the correct apiKey]"
+incorrect_token: Create the correct token
+error_creating_webhook: Error when creating a webhook
+error_adding_bot: Error when adding a bot
+error_save: Error while saving, contact technical support
+error_delete: Error while deleting, contact technical support
+missing_credentials: "Required methods: {{.Credentials}}"
+error_activity_mg: Check if the integration with retailCRM Chat is enabled in CRM settings
+
+crm_link: "<a href='//www.retailcrm.pro' title='retailCRM'>retailCRM</a>"
+doc_link: "<a href='//www.retailcrm.pro/docs' target='_blank'>documentation</a>"
+
+set_name_or_article: Enter product name or article number
+product_response: "Name: {{.Name}}\nStocks: {{.Quantity}} pcs\nPrice: {{.Price}} {{.Currency}}\nImage: {{.ImageURL}}"
+not_found: Nothing is found for the specified parameters
+get_payment: Get available payment types
+get_delivery: Get available types of deliveries
+get_product: Get product by article or name
+payment_options: "Payment options:"
+delivery_options: "Delivery options:"
+pieces: "pcs."

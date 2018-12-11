@@ -1,0 +1,68 @@
+{{define "body"}}
+    <div class="row indent-top">
+        <div class="col s12">
+            <ul class="tabs" id="tab">
+                <li class="tab col s6"><a class="active" href="#tab1">{{.Locale.TabSettings}}</a></li>
+                <li class="tab col s6"><a class="" href="#tab2">{{.Locale.TabBots}}</a></li>
+            </ul>
+        </div>
+        <div id="tab1" class="col s12">
+            <div class="row indent-top">
+                <form id="save" class="tab-el-center" action="/save/" method="POST">
+                    <input name="clientId" type="hidden" value="{{.Conn.ClientID}}">
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <input placeholder="{{.Locale.ApiUrl}}" id="api_url" name="api_url" type="text" class="validate" value="{{.Conn.APIURL}}">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <input placeholder="{{.Locale.ApiKey}}" id="api_key" name="api_key" type="text" class="validate" value="{{.Conn.APIKEY}}">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s12 center-align">
+                            <button class="btn waves-effect waves-light red lighten-1" type="submit" name="action">
+                                {{.Locale.ButtonSave}}
+                                <i class="material-icons right">sync</i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="tab2" class="col s12">
+            <div class="row indent-top">
+                <div class="lang-select">
+                {{$LangCode := .LangCode}}
+                {{$lang := .Conn.Lang}}
+                    <label>{{.Locale.Language}}</label>
+                    <select id="lang">
+                        {{range $key, $value := $LangCode}}
+                            <option value="{{$value}}" {{if eq $value $lang}}selected{{end}}>{{$value}}</option>
+                        {{end}}
+                    </select>
+                </div>
+                <div class="currency-select">
+                {{$CurrencyCode := .CurrencyCode}}
+                {{$currency := .Conn.Currency}}
+                    <label>Валюта</label>
+                    <select  id="currency">
+                    {{range $key, $value := $CurrencyCode}}
+                        <option value="{{$value}}" {{if eq $value $currency}}selected{{end}}>{{$key}}</option>
+                    {{end}}
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12 center-align">
+                    <button id="but-settings" class="btn waves-effect waves-light red lighten-1" type="submit" name="action"
+                            data-clientID="{{.Conn.ClientID}}" data-action="/bot-settings/">
+                        {{.Locale.ButtonSave}}
+                        <i class="material-icons right">sync</i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{{end}}

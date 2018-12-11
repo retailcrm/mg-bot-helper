@@ -1,0 +1,19 @@
+version: ~
+
+database:
+  connection: postgres://mg_bot:mg_bot@postgres:5432/mg_bot?sslmode=disable
+
+http_server:
+  host: ~
+  listen: :3001
+
+bot_info:
+  name: Helper
+  code: crm-info-bot
+  logo_path: /static/logo.svg
+
+sentry_dsn: ~
+
+log_level: 5
+
+debug: false

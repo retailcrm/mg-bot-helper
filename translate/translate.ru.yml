@@ -1,0 +1,48 @@
+button_save: Сохранить
+tab_settings: Настройки CRM
+tab_bots: Бот
+table_url: URL
+table_token: Токен
+table_activity: Активность
+api_key: API Ключ
+api_url: Адрес CRM
+add_bot: Добавить бота
+title: Модуль подключения mg-bot к retailCRM
+successful: Данные успешно обновлены
+language: Язык
+
+no_bot_token: Введите токен
+no_bot_url: Введите URL
+wrong_data: Неверные данные
+set_method: Установить метод POST
+bot_already_created: Бот уже создан
+not_found_account: Не удалось найти учетную запись, обратитесь в службу технической поддержки
+error_activating_channel: Ошибка при активации канала
+error_deactivating_channel: Ошибка при отключении канала
+incorrect_url_key: Введите корректный URL или apiKey
+error_creating_integration: Ошибка при создании интеграции
+error_creating_connection: Ошибка при создании соединения
+connection_already_created: Соединение уже создано
+missing_url_key: Отсутствует URL или apiKey
+incorrect_url: Введите корректный URL CRM
+incorrect_key: "[Введите корректный apiKey]"
+incorrect_token: Установите корректный токен
+error_creating_webhook: Ошибка при создании webhook
+error_adding_bot: Ошибка при добавлении бота
+error_save: Ошибка при сохранении, обратитесь в службу технической поддержки
+error_delete: Ошибка при удалении, обратитесь в службу технической поддержки
+missing_credentials: "Необходимые методы: {{.Credentials}}"
+error_activity_mg: Проверьте активность интеграции с retailCRM Chat в настройках CRM
+
+crm_link: "<a href='//www.retailcrm.ru' title='retailCRM'>retailCRM</a>"
+doc_link: "<a href='//www.retailcrm.ru/docs' target='_blank'>документация</a>"
+
+set_name_or_article: Укажите название или артикул товара
+product_response: "Название: {{.Name}}\nОстаток: {{.Quantity}} шт\nЦена: {{.Price}} {{.Currency}}\nИзображение: {{.ImageURL}}"
+not_found: По указанным параметрам ничего не найдено
+get_payment: Получить доступные типы оплат
+get_delivery: Получить доступные типы доставок
+get_product: Получить товар по артикулу или наименованию
+payment_options: "Варианты оплаты:"
+delivery_options: "Варианты доставки:"
+pieces: "шт."
