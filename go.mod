@@ -1,4 +1,4 @@
-module skillum.ru/mg-transport.crm-info-bot
+module github.com/retailcrm/mg-bot-helper
 
 require (
 	cloud.google.com/go v0.26.0 // indirect
