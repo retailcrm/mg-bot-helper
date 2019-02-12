@@ -11,7 +11,7 @@ services:
             - ${POSTGRES_ADDRESS:-127.0.0.1:5434}:${POSTGRES_PORT:-5432}
 
     mg_bot_test:
-        image: golang:1.11-stretch
+        image: golang:1.11.5-stretch
         working_dir: /mg-bot
         user: ${UID:-1000}:${GID:-1000}
         environment:
