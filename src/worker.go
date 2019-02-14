@@ -314,7 +314,7 @@ func (w *Worker) execCommand(message string) (resMes string, msgProd v1.MessageP
 					if vp.Quantity > 0 {
 						msgProd.Quantity = &v1.MessageOrderQuantity{
 							Value: vp.Quantity,
-							Unit:  w.localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "pieces"}),
+							Unit:  vo.Unit.Sym,
 						}
 					}
 

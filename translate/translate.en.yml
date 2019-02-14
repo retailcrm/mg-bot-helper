@@ -45,4 +45,3 @@ get_delivery: Get available types of deliveries
 get_product: Get product by article or name
 payment_options: "Payment options:"
 delivery_options: "Delivery options:"
-pieces: "pcs."
