@@ -1,5 +1,11 @@
 package main
 
+import (
+	"regexp"
+)
+
+var rx = regexp.MustCompile(`/+$`)
+
 func getConnection(uid string) *Connection {
 	var connection Connection
 	orm.DB.First(&connection, "client_id = ?", uid)
@@ -31,4 +37,8 @@ func (c *Connection) createConnection() error {
 
 func (c *Connection) saveConnection() error {
 	return orm.DB.Model(c).Where("client_id = ?", c.ClientID).Update(c).Error
+}
+
+func (c *Connection) NormalizeApiUrl() {
+	c.APIURL = rx.ReplaceAllString(c.APIURL, ``)
 }

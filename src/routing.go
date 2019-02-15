@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -195,8 +194,9 @@ func activityHandler(c *gin.Context) {
 	conn.Active = activity.Active && !activity.Freeze
 
 	if systemUrl != "" {
-		conn.APIURL = strings.TrimRight(systemUrl, "/")
+		conn.APIURL = systemUrl
 	}
+	conn.NormalizeApiUrl()
 
 	if err := conn.setConnectionActivity(); err != nil {
 		c.Error(err)
