@@ -1,4 +1,4 @@
-FROM golang:1.11.5-stretch
+FROM golang:1.11-stretch
 
 WORKDIR /
 ADD ./bin/bot /
