@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"regexp"
 	"syscall"
 
 	"github.com/getsentry/raven-go"
@@ -24,7 +23,6 @@ func init() {
 
 var (
 	sentry *raven.Client
-	rx     = regexp.MustCompile(`/+$`)
 	wm     = NewWorkersManager()
 )
 
@@ -129,7 +127,7 @@ func checkConnectionForRequest() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": getLocalizedMessage("incorrect_url_key")})
 			return
 		}
-		conn.APIURL = rx.ReplaceAllString(conn.APIURL, ``)
+		conn.NormalizeApiUrl()
 
 		c.Set("connection", conn)
 	}

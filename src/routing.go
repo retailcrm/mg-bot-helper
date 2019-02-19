@@ -196,6 +196,7 @@ func activityHandler(c *gin.Context) {
 	if systemUrl != "" {
 		conn.APIURL = systemUrl
 	}
+	conn.NormalizeApiUrl()
 
 	if err := conn.setConnectionActivity(); err != nil {
 		c.Error(err)
