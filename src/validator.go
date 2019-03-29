@@ -8,7 +8,6 @@ import (
 	"gopkg.in/go-playground/validator.v8"
 
 	"github.com/gin-gonic/gin/binding"
-	"gopkg.in/go-playground/validator.v9"
 )
 
 var regCommandName = regexp.MustCompile(`https://?[\da-z.-]+\.(retailcrm\.(ru|pro)|ecomlogic\.com|simlachat\.com)`)
