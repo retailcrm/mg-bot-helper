@@ -9,7 +9,7 @@ import (
 	"gopkg.in/go-playground/validator.v9"
 )
 
-var regCommandName = regexp.MustCompile(`https://?[\da-z.-]+\.(retailcrm\.(ru|pro|es)|ecomlogic\.com)`)
+var regCommandName = regexp.MustCompile(`https://?[\da-z.-]+\.(retailcrm\.(ru|pro)|ecomlogic\.com|simlachat\.com)`)
 
 type defaultValidator struct {
 	once     sync.Once
