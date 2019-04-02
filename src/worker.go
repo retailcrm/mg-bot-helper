@@ -14,8 +14,8 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/op/go-logging"
 	"github.com/retailcrm/api-client-go/errs"
-	"github.com/retailcrm/api-client-go/v5"
-	"github.com/retailcrm/mg-bot-api-client-go/v1"
+	v5 "github.com/retailcrm/api-client-go/v5"
+	v1 "github.com/retailcrm/mg-bot-api-client-go/v1"
 	"golang.org/x/text/language"
 )
 
@@ -298,7 +298,7 @@ func (w *Worker) execCommand(message string) (resMes string, msgProd v1.MessageP
 		if len(res.Products) > 0 {
 			for _, vp := range res.Products {
 				if vp.Active {
-					vo := vp.Offers[0]
+					vo := searchOffer(vp.Offers, params.Filter.Name)
 					msgProd = v1.MessageProduct{
 						ID:      uint64(vo.ID),
 						Name:    vo.Name,
@@ -350,6 +350,28 @@ func (w *Worker) execCommand(message string) (resMes string, msgProd v1.MessageP
 
 	if len(resMes) > msgLen {
 		resMes = resMes[:msgLen]
+	}
+
+	return
+}
+
+func searchOffer(offers []v5.Offer, filter string) (offer v5.Offer) {
+	for _, o := range offers {
+		if o.Article == filter {
+			offer = o
+		}
+	}
+
+	if offer.ID == 0 {
+		for _, o := range offers {
+			if o.Name == filter {
+				offer = o
+			}
+		}
+	}
+
+	if offer.ID == 0 {
+		offer = offers[0]
 	}
 
 	return
