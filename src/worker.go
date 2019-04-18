@@ -327,6 +327,8 @@ func (w *Worker) execCommand(message string) (resMes string, msgProd v1.MessageP
 			}
 
 		}
+	default:
+		return
 	}
 
 	if len(s) == 0 {
