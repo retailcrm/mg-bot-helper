@@ -259,6 +259,7 @@ func (w *Worker) execCommand(message string) (resMes string, msgProd v1.MessageP
 		res, _, er := w.crmClient.PaymentTypes()
 		err = checkErrors(er)
 		if err != nil {
+			logger.Errorf("%s - Cannot retrieve payment types, error: %s", w.crmClient.URL, err.Error())
 			return
 		}
 		for _, v := range res.PaymentTypes {
@@ -273,6 +274,7 @@ func (w *Worker) execCommand(message string) (resMes string, msgProd v1.MessageP
 		res, _, er := w.crmClient.DeliveryTypes()
 		err = checkErrors(er)
 		if err != nil {
+			logger.Errorf("%s - Cannot retrieve delivery types, error: %s", w.crmClient.URL, err.Error())
 			return
 		}
 		for _, v := range res.DeliveryTypes {
@@ -292,6 +294,7 @@ func (w *Worker) execCommand(message string) (resMes string, msgProd v1.MessageP
 		res, _, er := w.crmClient.Products(params)
 		err = checkErrors(er)
 		if err != nil {
+			logger.Errorf("%s - Cannot retrieve product, error: %s", w.crmClient.URL, err.Error())
 			return
 		}
 
