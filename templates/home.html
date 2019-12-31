@@ -2,21 +2,22 @@
     <div class="row indent-top home">
         <form class="tab-el-center" method="POST" id="save-crm" action="/create/">
             <div id="msg"></div>
+            <input name="csrf_token" type="hidden" value="{{.TokenCSRF}}">
             <div class="row">
                 <div class="input-field col s12">
                     <input placeholder="CRM Url" id="api_url" name="api_url" type="text" class="validate"
-                        {{if .Conn.APIURL}} value="{{.Conn.APIURL}}" {{end}}>
+                        {{if .Conn.URL}} value="{{.Conn.URL}}" {{end}}>
                 </div>
             </div>
             <div class="row">
                 <div class="input-field col s12">
-                    <input placeholder="{{.Locale.ApiKey}}" id="api_key" name="api_key" type="text" class="validate">
+                    <input placeholder="{{"api_key" | trans}}" id="api_key" name="api_key" type="text" class="validate">
                 </div>
             </div>
             <div class="row">
                 <div class="input-field col s12 center-align">
                     <button class="btn waves-effect waves-light red lighten-1" type="submit" name="action">
-                        {{.Locale.ButtonSave}}
+                        {{"button_save" | trans}}
                         <i class="material-icons right">sync</i>
                     </button>
                 </div>

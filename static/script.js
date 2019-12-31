@@ -1,3 +1,9 @@
+$.ajaxSetup({
+    headers: {
+        "X-CSRF-Token": $('input[name=csrf_token]').val() || ""
+    }
+});
+
 $('#save-crm').on("submit", function(e) {
     e.preventDefault();
     let formData = formDataToObj($(this).serializeArray());

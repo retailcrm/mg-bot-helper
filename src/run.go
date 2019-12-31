@@ -1,16 +1,17 @@
 package main
 
 import (
-	"net/http"
+	"html/template"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/getsentry/raven-go"
-	"github.com/gin-contrib/multitemplate"
+	"github.com/gin-contrib/secure"
 	"github.com/gin-gonic/gin"
-	_ "github.com/golang-migrate/migrate/database/postgres"
-	_ "github.com/golang-migrate/migrate/source/file"
+	"github.com/retailcrm/mg-bot-helper/src/models"
+	"github.com/retailcrm/mg-transport-core/core"
+	cors "github.com/rs/cors/wrapper/gin"
 )
 
 func init() {
@@ -21,20 +22,14 @@ func init() {
 	)
 }
 
-var (
-	sentry *raven.Client
-	wm     = NewWorkersManager()
-)
+var sentry *raven.Client
 
 // RunCommand struct
 type RunCommand struct{}
 
 // Execute command
 func (x *RunCommand) Execute(args []string) error {
-	config = LoadConfig(options.Config)
-	orm = NewDb(config)
-	logger = newLogger()
-
+	initialize(true)
 	go start()
 
 	c := make(chan os.Signal, 1)
@@ -42,7 +37,7 @@ func (x *RunCommand) Execute(args []string) error {
 	for sig := range c {
 		switch sig {
 		case os.Interrupt, syscall.SIGQUIT, syscall.SIGTERM:
-			orm.DB.Close()
+			app.DB.Close()
 			return nil
 		default:
 		}
@@ -51,93 +46,79 @@ func (x *RunCommand) Execute(args []string) error {
 	return nil
 }
 
-func start() {
-	router := setup()
-	startWS()
-	router.Run(config.HTTPServer.Listen)
-}
-
-func setup() *gin.Engine {
-	loadTranslateFile()
-	setValidation()
-
-	if config.Debug == false {
-		gin.SetMode(gin.ReleaseMode)
-	}
-
-	r := gin.New()
-	r.Use(gin.Recovery())
-	if config.Debug {
-		r.Use(gin.Logger())
-	}
-
-	r.HTMLRender = createHTMLRender()
-
-	r.Static("/static", "./static")
-
-	r.Use(func(c *gin.Context) {
-		setLocale(c.GetHeader("Accept-Language"))
-	})
-
-	errorHandlers := []ErrorHandlerFunc{
-		PanicLogger(),
-		ErrorResponseHandler(),
-	}
-
-	sentry, _ = raven.New(config.SentryDSN)
-	if sentry != nil {
-		errorHandlers = append(errorHandlers, ErrorCaptureHandler(sentry, true))
-	}
-
-	r.Use(ErrorHandler(errorHandlers...))
-
-	r.GET("/", checkAccountForRequest(), connectHandler)
-	r.Any("/settings/:uid", settingsHandler)
-	r.POST("/save/", checkConnectionForRequest(), saveHandler)
-	r.POST("/create/", checkConnectionForRequest(), createHandler)
-	r.POST("/bot-settings/", botSettingsHandler)
-	r.POST("/actions/activity", activityHandler)
-
-	return r
-}
-
-func createHTMLRender() multitemplate.Renderer {
-	r := multitemplate.NewRenderer()
-	r.AddFromFiles("home", "templates/layout.html", "templates/home.html")
-	r.AddFromFiles("form", "templates/layout.html", "templates/form.html")
-	return r
-}
-
-func checkAccountForRequest() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ra := rx.ReplaceAllString(c.Query("account"), ``)
-		p := Connection{
-			APIURL: ra,
-		}
-
-		c.Set("account", p)
-	}
-}
-
-func checkConnectionForRequest() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var conn Connection
-
-		if err := c.ShouldBindJSON(&conn); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": getLocalizedMessage("incorrect_url_key")})
+func initialize(enableCSRFVerification bool) {
+	app.TaggedTypes = getSentryTaggedTypes()
+	secret, _ := core.GetEntitySHA1(app.Config.GetTransportInfo())
+	app.InitCSRF(
+		secret,
+		func(c *gin.Context, r core.CSRFErrorReason) {
+			app.Logger().Errorf("[%s]: wrong csrf token: %s", c.Request.RemoteAddr, core.GetCSRFErrorMessage(r))
+			c.AbortWithStatusJSON(app.BadRequestLocalized("incorrect_csrf_token"))
 			return
-		}
-		conn.NormalizeApiUrl()
+		},
+		core.DefaultCSRFTokenGetter,
+	)
 
-		c.Set("connection", conn)
-	}
+	app.ConfigureRouter(func(r *gin.Engine) {
+		r.StaticFS("/static", static)
+
+		if r.HTMLRender == nil {
+			r.HTMLRender = app.CreateRendererFS(templates, insertTemplates, template.FuncMap{})
+		}
+
+		r.Use(cors.New(cors.Options{
+			AllowedOrigins:     []string{"https://" + app.Config.GetHTTPConfig().Host},
+			AllowedMethods:     []string{"HEAD", "GET", "POST", "PUT", "DELETE"},
+			MaxAge:             60 * 5,
+			AllowCredentials:   true,
+			OptionsPassthrough: false,
+			Debug:              false,
+		}))
+		r.Use(secure.New(secure.Config{
+			STSSeconds:            315360000,
+			IsDevelopment:         false,
+			STSIncludeSubdomains:  true,
+			FrameDeny:             true,
+			ContentTypeNosniff:    true,
+			BrowserXssFilter:      true,
+			IENoOpen:              true,
+			SSLProxyHeaders:       map[string]string{"X-Forwarded-Proto": "https"},
+			ContentSecurityPolicy: "default-src 'self' 'unsafe-eval' 'unsafe-inline' *.facebook.net *.facebook.com; object-src 'none'",
+		}))
+
+		if enableCSRFVerification {
+			r.Use(app.GenerateCSRFMiddleware())
+		}
+
+		initRouting(r, enableCSRFVerification)
+	})
+	app.BuildHTTPClient(true)
+}
+
+func start() {
+	startWS()
+	app.Run()
 }
 
 func startWS() {
-	res := getActiveConnection()
+	res := models.GetActiveConnection()
 	if len(res) > 0 {
 		for _, v := range res {
 			wm.setWorker(v)
 		}
 	}
+}
+
+func getSentryTaggedTypes() core.SentryTaggedTypes {
+	return core.SentryTaggedTypes{
+		core.NewTaggedStruct(models.Connection{}, "connection", core.SentryTags{
+			"crm":      "URL",
+			"clientID": "ClientID",
+		}),
+	}
+}
+
+func insertTemplates(r *core.Renderer) {
+	r.Push("home", "layout.html", "home.html")
+	r.Push("form", "layout.html", "form.html")
 }

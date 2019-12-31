@@ -1,11 +1,7 @@
-FROM golang:1.11-stretch
+FROM golang:1.13-stretch
 
 WORKDIR /
 ADD ./bin/bot /
-ADD ./templates/ /templates/
-ADD ./static/ /static/
-ADD ./translate/ /translate/
-ADD ./migrations/ /migrations/
 
 EXPOSE 3001
 

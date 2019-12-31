@@ -1,83 +1,64 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"strconv"
 
-	"github.com/golang-migrate/migrate"
+	_ "github.com/retailcrm/mg-bot-helper/src/migrations"
+	"github.com/retailcrm/mg-transport-core/core"
 )
 
 func init() {
-	parser.AddCommand("migrate",
+	_, err := parser.AddCommand("migrate",
 		"Migrate database to defined migrations version",
 		"Migrate database to defined migrations version.",
 		&MigrateCommand{},
 	)
+
+	if err != nil {
+		panic(err.Error())
+	}
 }
 
 // MigrateCommand struct
 type MigrateCommand struct {
-	Version string `short:"v" long:"version" default:"up" description:"Migrate to defined migrations version. Allowed: up, down, next, prev and integer value."`
-	Path    string `short:"p" long:"path" default:"" description:"Path to migrations files."`
+	Version string `short:"v" long:"version" default:"up" description:"Migrate to defined migrations version. Allowed: up, down, next, prev and migration version."`
 }
 
-// Execute method
 func (x *MigrateCommand) Execute(args []string) error {
-	botConfig := LoadConfig(options.Config)
+	core.Migrations().SetDB(app.DB)
 
-	err := Migrate(botConfig.Database.Connection, x.Version, x.Path)
-	if err != nil && err.Error() == "no change" {
-		fmt.Println("No changes detected. Skipping migration.")
-		err = nil
-	}
-
-	return err
-}
-
-// Migrate function
-func Migrate(database string, version string, path string) error {
-	m, err := migrate.New("file://"+path, database)
-	if err != nil {
-		fmt.Printf("Migrations path %s does not exist or permission denied\n", path)
+	if err := Migrate(x.Version); err != nil {
 		return err
 	}
 
-	defer m.Close()
+	return nil
+}
 
-	currentVersion, _, err := m.Version()
+func Migrate(version string) error {
+	currentVersion := core.Migrations().Current()
+
+	defer core.Migrations().Close()
+
 	if "up" == version {
-		fmt.Printf("Migrating from %d to last\n", currentVersion)
-		return m.Up()
+		fmt.Printf("Migrating from %s to last\n", currentVersion)
+		return core.Migrations().Migrate()
 	}
 
 	if "down" == version {
-		fmt.Printf("Migrating from %d to 0\n", currentVersion)
-		return m.Down()
+		fmt.Printf("Migrating from %s to 0\n", currentVersion)
+		return core.Migrations().Rollback()
 	}
 
 	if "next" == version {
-		fmt.Printf("Migrating from %d to next\n", currentVersion)
-		return m.Steps(1)
+		fmt.Printf("Migrating from %s to next", currentVersion)
+		return core.Migrations().MigrateNextTo(currentVersion)
 	}
 
 	if "prev" == version {
-		fmt.Printf("Migrating from %d to previous\n", currentVersion)
-		return m.Steps(-1)
+		fmt.Printf("Migration from %s to previous", currentVersion)
+		return core.Migrations().MigratePreviousTo(currentVersion)
 	}
 
-	ver, err := strconv.ParseUint(version, 10, 32)
-	if err != nil {
-		fmt.Printf("Invalid migration version %s\n", version)
-		return err
-	}
-
-	if ver != 0 {
-		fmt.Printf("Migrating from %d to %d\n", currentVersion, ver)
-		return m.Migrate(uint(ver))
-	}
-
-	fmt.Printf("Migrations not found in path %s\n", path)
-
-	return errors.New("migrations not found")
+	fmt.Printf("Migration from %s to %s", currentVersion, version)
+	return core.Migrations().MigrateTo(version)
 }

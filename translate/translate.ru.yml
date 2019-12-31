@@ -33,9 +33,12 @@ error_save: Ошибка при сохранении, обратитесь в с
 error_delete: Ошибка при удалении, обратитесь в службу технической поддержки
 missing_credentials: "Необходимые методы: {{.Credentials}}"
 error_activity_mg: Проверьте активность интеграции с retailCRM Chat в настройках CRM
+incorrect_csrf_token: Неверный токен CSRF, пожалуйста, обновите страницу
 
-crm_link: "<a href='//www.retailcrm.ru' title='retailCRM'>retailCRM</a>"
-doc_link: "<a href='//www.retailcrm.ru/docs' target='_blank'>документация</a>"
+crm_link_url: "https://www.retailcrm.ru"
+crm_link_title: "retailCRM"
+doc_link_url: "https://help.retailcrm.ru/docs"
+doc_link_title: "документация"
 
 set_name_or_article: Укажите название или артикул товара
 product_response: "Название: {{.Name}}\nОстаток: {{.Quantity}} шт\nЦена: {{.Price}} {{.Currency}}\nИзображение: {{.ImageURL}}"

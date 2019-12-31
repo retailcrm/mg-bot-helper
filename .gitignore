@@ -4,3 +4,5 @@ config_test.yml
 /bin/*
 *.xml
 /vendor
+src/main-packr.go
+src/packrd/*

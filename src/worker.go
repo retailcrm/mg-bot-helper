@@ -11,11 +11,12 @@ import (
 
 	"github.com/getsentry/raven-go"
 	"github.com/gorilla/websocket"
-	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/op/go-logging"
 	"github.com/retailcrm/api-client-go/errs"
 	v5 "github.com/retailcrm/api-client-go/v5"
 	v1 "github.com/retailcrm/mg-bot-api-client-go/v1"
+	"github.com/retailcrm/mg-bot-helper/src/models"
+	"github.com/retailcrm/mg-transport-core/core"
 	"golang.org/x/text/language"
 )
 
@@ -26,26 +27,19 @@ const (
 )
 
 var (
-	events         = []string{v1.WsEventMessageNew}
-	msgLen         = 2000
-	emoji          = []string{"0️⃣ ", "1️⃣ ", "2️⃣ ", "3️⃣ ", "4️⃣ ", "5️⃣ ", "6️⃣ ", "7️⃣ ", "8️⃣ ", "9️⃣ "}
-	botCommands    = []string{CommandPayment, CommandDelivery, CommandProduct}
-	botCredentials = []string{
-		"/api/integration-modules/{code}",
-		"/api/integration-modules/{code}/edit",
-		"/api/reference/payment-types",
-		"/api/reference/delivery-types",
-		"/api/store/products",
-	}
+	events      = []string{v1.WsEventMessageNew}
+	msgLen      = 2000
+	emoji       = []string{"0️⃣ ", "1️⃣ ", "2️⃣ ", "3️⃣ ", "4️⃣ ", "5️⃣ ", "6️⃣ ", "7️⃣ ", "8️⃣ ", "9️⃣ "}
+	botCommands = []string{CommandPayment, CommandDelivery, CommandProduct}
 )
 
 type Worker struct {
-	connection *Connection
+	connection *models.Connection
 	mutex      sync.RWMutex
-	localizer  *i18n.Localizer
+	localizer  *core.Localizer
 
 	sentry *raven.Client
-	logger *logging.Logger
+	log    chan LogMessage
 
 	mgClient  *v1.MgClient
 	crmClient *v5.Client
@@ -53,10 +47,10 @@ type Worker struct {
 	close bool
 }
 
-func NewWorker(conn *Connection, sentry *raven.Client, logger *logging.Logger) *Worker {
-	crmClient := v5.New(conn.APIURL, conn.APIKEY)
-	mgClient := v1.New(conn.MGURL, conn.MGToken)
-	if config.Debug {
+func NewWorker(conn *models.Connection, sentry *raven.Client, logChannel chan LogMessage) *Worker {
+	crmClient := v5.New(conn.URL, conn.Key)
+	mgClient := v1.New(conn.GateURL, conn.GateToken)
+	if app.Config.IsDebug() {
 		crmClient.Debug = true
 		mgClient.Debug = true
 	}
@@ -64,47 +58,85 @@ func NewWorker(conn *Connection, sentry *raven.Client, logger *logging.Logger) *
 	return &Worker{
 		connection: conn,
 		sentry:     sentry,
-		logger:     logger,
-		localizer:  getLang(conn.Lang),
+		log:        logChannel,
+		localizer:  getLocalizer(conn.Lang),
 		mgClient:   mgClient,
 		crmClient:  crmClient,
 		close:      false,
 	}
 }
 
-func (w *Worker) UpdateWorker(conn *Connection) {
+func (w *Worker) UpdateWorker(conn *models.Connection) {
 	w.mutex.RLock()
 	defer w.mutex.RUnlock()
 
-	w.localizer = getLang(conn.Lang)
+	w.localizer = getLocalizer(conn.Lang)
 	w.connection = conn
+}
+
+func (w *Worker) writeLog(text string, severity logging.Level) {
+	w.log <- LogMessage{
+		Text:     text,
+		Severity: severity,
+	}
 }
 
 func (w *Worker) sendSentry(err error) {
 	tags := map[string]string{
-		"crm":        w.connection.APIURL,
+		"crm":        w.connection.URL,
 		"active":     strconv.FormatBool(w.connection.Active),
 		"lang":       w.connection.Lang,
 		"currency":   w.connection.Currency,
 		"updated_at": w.connection.UpdatedAt.String(),
 	}
 
-	w.logger.Errorf("ws url: %s\nmgClient: %v\nerr: %v", w.crmClient.URL, w.mgClient, err)
+	w.writeLog(fmt.Sprintf("ws url: %s\nmgClient: %v\nerr: %v", w.crmClient.URL, w.mgClient, err), logging.ERROR)
 	go w.sentry.CaptureError(err, tags)
+}
+
+// LogMessage represents log message
+type LogMessage struct {
+	Text     string
+	Severity logging.Level
 }
 
 type WorkersManager struct {
 	mutex   sync.RWMutex
+	log     chan LogMessage
 	workers map[string]*Worker
 }
 
 func NewWorkersManager() *WorkersManager {
-	return &WorkersManager{
+	wm := &WorkersManager{
 		workers: map[string]*Worker{},
+		log:     make(chan LogMessage),
+	}
+
+	go wm.logCollector()
+
+	return wm
+}
+
+func (wm *WorkersManager) logCollector() {
+	for msg := range wm.log {
+		switch msg.Severity {
+		case logging.CRITICAL:
+			app.Logger().Critical(msg.Text)
+		case logging.ERROR:
+			app.Logger().Error(msg.Text)
+		case logging.WARNING:
+			app.Logger().Warning(msg.Text)
+		case logging.NOTICE:
+			app.Logger().Notice(msg.Text)
+		case logging.INFO:
+			app.Logger().Info(msg.Text)
+		case logging.DEBUG:
+			app.Logger().Debug(msg.Text)
+		}
 	}
 }
 
-func (wm *WorkersManager) setWorker(conn *Connection) {
+func (wm *WorkersManager) setWorker(conn *models.Connection) {
 	wm.mutex.Lock()
 	defer wm.mutex.Unlock()
 
@@ -113,13 +145,13 @@ func (wm *WorkersManager) setWorker(conn *Connection) {
 		if ok {
 			worker.UpdateWorker(conn)
 		} else {
-			wm.workers[conn.ClientID] = NewWorker(conn, sentry, logger)
+			wm.workers[conn.ClientID] = NewWorker(conn, sentry, wm.log)
 			go wm.workers[conn.ClientID].UpWS()
 		}
 	}
 }
 
-func (wm *WorkersManager) stopWorker(conn *Connection) {
+func (wm *WorkersManager) stopWorker(conn *models.Connection) {
 	wm.mutex.Lock()
 	defer wm.mutex.Unlock()
 
@@ -140,8 +172,8 @@ func (w *Worker) UpWS() {
 ROOT:
 	for {
 		if w.close {
-			if config.Debug {
-				w.logger.Debug("stop ws:", w.connection.APIURL)
+			if app.Config.IsDebug() {
+				w.writeLog(fmt.Sprint("stop ws:", w.connection.URL), logging.DEBUG)
 			}
 			return
 		}
@@ -152,8 +184,8 @@ ROOT:
 			continue ROOT
 		}
 
-		if config.Debug {
-			w.logger.Info("start ws: ", w.crmClient.URL)
+		if app.Config.IsDebug() {
+			w.writeLog(fmt.Sprint("start ws: ", w.crmClient.URL), logging.INFO)
 		}
 
 		for {
@@ -168,8 +200,8 @@ ROOT:
 			}
 
 			if w.close {
-				if config.Debug {
-					w.logger.Debug("stop ws:", w.connection.APIURL)
+				if app.Config.IsDebug() {
+					w.writeLog(fmt.Sprint("stop ws:", w.connection.URL), logging.DEBUG)
 				}
 				return
 			}
@@ -188,7 +220,7 @@ ROOT:
 			msg, msgProd, err := w.execCommand(eventData.Message.Content)
 			if err != nil {
 				w.sendSentry(err)
-				msg = w.localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "incorrect_key"})
+				msg = w.localizer.GetLocalizedMessage("incorrect_key")
 			}
 
 			msgSend := v1.MessageSendRequest{
@@ -207,22 +239,32 @@ ROOT:
 			if msgSend.Type != "" {
 				d, status, err := w.mgClient.MessageSend(msgSend)
 				if err != nil {
-					w.logger.Warningf("MessageSend status: %d\nMessageSend err: %v\nMessageSend data: %v", status, err, d)
+					w.writeLog(fmt.Sprintf("MessageSend status: %d\nMessageSend err: %v\nMessageSend data: %v", status, err, d), logging.WARNING)
 					continue
 				}
 			}
 		}
+
 		time.Sleep(500 * time.Millisecond)
 	}
 }
 
-func checkErrors(err errs.Failure) error {
-	if err.RuntimeErr != nil {
-		return err.RuntimeErr
+func checkErrors(err *errs.Failure) error {
+	if err != nil && err.Error() != "" {
+		return errors.New(err.Error())
 	}
 
-	if err.ApiErr != "" {
-		return errors.New(err.ApiErr)
+	if err != nil && (err.ApiError() != "" || len(err.ApiErrors()) > 0) {
+		if err.ApiError() != "" {
+			return errors.New(err.ApiError())
+		} else {
+			var errStr []string
+			for key, value := range err.ApiErrors() {
+				errStr = append(errStr, key+": "+value)
+			}
+
+			return errors.New(strings.Join(errStr, ", "))
+		}
 	}
 
 	return nil
@@ -259,7 +301,7 @@ func (w *Worker) execCommand(message string) (resMes string, msgProd v1.MessageP
 		res, _, er := w.crmClient.PaymentTypes()
 		err = checkErrors(er)
 		if err != nil {
-			logger.Errorf("%s - Cannot retrieve payment types, error: %s", w.crmClient.URL, err.Error())
+			w.writeLog(fmt.Sprintf("%s - Cannot retrieve payment types, error: %s", w.crmClient.URL, err.Error()), logging.ERROR)
 			return
 		}
 		for _, v := range res.PaymentTypes {
@@ -268,13 +310,13 @@ func (w *Worker) execCommand(message string) (resMes string, msgProd v1.MessageP
 			}
 		}
 		if len(s) > 0 {
-			resMes = fmt.Sprintf("%s\n\n", w.localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "payment_options"}))
+			resMes = fmt.Sprintf("%s\n\n", w.localizer.GetLocalizedMessage("payment_options"))
 		}
 	case CommandDelivery:
 		res, _, er := w.crmClient.DeliveryTypes()
 		err = checkErrors(er)
 		if err != nil {
-			logger.Errorf("%s - Cannot retrieve delivery types, error: %s", w.crmClient.URL, err.Error())
+			w.writeLog(fmt.Sprintf("%s - Cannot retrieve delivery types, error: %s", w.crmClient.URL, err.Error()), logging.ERROR)
 			return
 		}
 		for _, v := range res.DeliveryTypes {
@@ -283,18 +325,18 @@ func (w *Worker) execCommand(message string) (resMes string, msgProd v1.MessageP
 			}
 		}
 		if len(s) > 0 {
-			resMes = fmt.Sprintf("%s\n\n", w.localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "delivery_options"}))
+			resMes = fmt.Sprintf("%s\n\n", w.localizer.GetLocalizedMessage("delivery_options"))
 		}
 	case CommandProduct:
 		if params.Filter.Name == "" {
-			resMes = w.localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "set_name_or_article"})
+			resMes = w.localizer.GetLocalizedMessage("set_name_or_article")
 			return
 		}
 
 		res, _, er := w.crmClient.Products(params)
 		err = checkErrors(er)
 		if err != nil {
-			logger.Errorf("%s - Cannot retrieve product, error: %s", w.crmClient.URL, err.Error())
+			w.writeLog(fmt.Sprintf("%s - Cannot retrieve product, error: %s", w.crmClient.URL, err.Error()), logging.ERROR)
 			return
 		}
 
@@ -335,7 +377,7 @@ func (w *Worker) execCommand(message string) (resMes string, msgProd v1.MessageP
 	}
 
 	if len(s) == 0 {
-		resMes = w.localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "not_found"})
+		resMes = w.localizer.GetLocalizedMessage("not_found")
 		return
 	}
 
@@ -387,17 +429,17 @@ func SetBotCommand(botURL, botToken string) (code int, err error) {
 
 	_, code, err = client.CommandEdit(v1.CommandEditRequest{
 		Name:        getTextCommand(CommandPayment),
-		Description: getLocalizedMessage("get_payment"),
+		Description: app.GetLocalizedMessage("get_payment"),
 	})
 
 	_, code, err = client.CommandEdit(v1.CommandEditRequest{
 		Name:        getTextCommand(CommandDelivery),
-		Description: getLocalizedMessage("get_delivery"),
+		Description: app.GetLocalizedMessage("get_delivery"),
 	})
 
 	_, code, err = client.CommandEdit(v1.CommandEditRequest{
 		Name:        getTextCommand(CommandProduct),
-		Description: getLocalizedMessage("get_product"),
+		Description: app.GetLocalizedMessage("get_product"),
 	})
 
 	return
@@ -407,8 +449,23 @@ func getTextCommand(command string) string {
 	return strings.Replace(command, "/", "", -1)
 }
 
-func getLang(lang string) *i18n.Localizer {
-	tag, _ := language.MatchStrings(matcher, lang)
+func getLocalizer(locale string) *core.Localizer {
+	var localizer *core.Localizer
 
-	return i18n.NewLocalizer(bundle, tag.String())
+	if app.TranslationsBox != nil {
+		localizer = core.NewLocalizerFS(language.English, core.DefaultLocalizerBundle(),
+			core.DefaultLocalizerMatcher(), app.TranslationsBox)
+	}
+
+	if app.TranslationsPath != "" {
+		localizer = core.NewLocalizer(language.English, core.DefaultLocalizerBundle(),
+			core.DefaultLocalizerMatcher(), app.TranslationsPath)
+	}
+
+	if localizer == nil {
+		panic("cannot initialize localizer")
+	}
+
+	localizer.SetLocale(locale)
+	return localizer
 }

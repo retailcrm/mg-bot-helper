@@ -11,7 +11,7 @@ services:
             - ${POSTGRES_ADDRESS:-127.0.0.1:5434}:${POSTGRES_PORT:-5432}
 
     mg_bot:
-        image: golang:1.11-stretch
+        image: golang:1.13-stretch
         working_dir: /mg-bot
         user: ${UID:-1000}:${GID:-1000}
         environment:
@@ -19,6 +19,7 @@ services:
         volumes:
             - ./:/mg-bot/
             - ./static:/static/
+            - /home/pavel/mg-transports/mg-transport-core:/mg-transport-core
         links:
             - postgres
         ports:

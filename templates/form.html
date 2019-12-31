@@ -2,28 +2,29 @@
     <div class="row indent-top">
         <div class="col s12">
             <ul class="tabs" id="tab">
-                <li class="tab col s6"><a class="active" href="#tab1">{{.Locale.TabSettings}}</a></li>
-                <li class="tab col s6"><a class="" href="#tab2">{{.Locale.TabBots}}</a></li>
+                <li class="tab col s6"><a class="active" href="#tab1">{{"tab_settings" | trans}}</a></li>
+                <li class="tab col s6"><a class="" href="#tab2">{{"tab_bots" | trans}}</a></li>
             </ul>
         </div>
         <div id="tab1" class="col s12">
             <div class="row indent-top">
                 <form id="save" class="tab-el-center" action="/save/" method="POST">
+                    <input name="csrf_token" type="hidden" value="{{.TokenCSRF}}">
                     <input name="clientId" type="hidden" value="{{.Conn.ClientID}}">
                     <div class="row">
                         <div class="input-field col s12">
-                            <input placeholder="{{.Locale.ApiUrl}}" id="api_url" name="api_url" type="text" class="validate" value="{{.Conn.APIURL}}">
+                            <input placeholder="{{"api_url" | trans}}" id="api_url" name="api_url" type="text" class="validate" value="{{.Conn.URL}}">
                         </div>
                     </div>
                     <div class="row">
                         <div class="input-field col s12">
-                            <input placeholder="{{.Locale.ApiKey}}" id="api_key" name="api_key" type="text" class="validate" value="{{.Conn.APIKEY}}">
+                            <input placeholder="{{"api_key" | trans}}" id="api_key" name="api_key" type="text" class="validate" value="{{.Conn.Key}}">
                         </div>
                     </div>
                     <div class="row">
                         <div class="input-field col s12 center-align">
                             <button class="btn waves-effect waves-light red lighten-1" type="submit" name="action">
-                                {{.Locale.ButtonSave}}
+                                {{"button_save" | trans}}
                                 <i class="material-icons right">sync</i>
                             </button>
                         </div>
@@ -36,7 +37,7 @@
                 <div class="lang-select">
                 {{$LangCode := .LangCode}}
                 {{$lang := .Conn.Lang}}
-                    <label>{{.Locale.Language}}</label>
+                    <label>{{"language" | trans}}</label>
                     <select id="lang">
                         {{range $key, $value := $LangCode}}
                             <option value="{{$value}}" {{if eq $value $lang}}selected{{end}}>{{$value}}</option>
@@ -58,7 +59,7 @@
                 <div class="input-field col s12 center-align">
                     <button id="but-settings" class="btn waves-effect waves-light red lighten-1" type="submit" name="action"
                             data-clientID="{{.Conn.ClientID}}" data-action="/bot-settings/">
-                        {{.Locale.ButtonSave}}
+                        {{"button_save" | trans}}
                         <i class="material-icons right">sync</i>
                     </button>
                 </div>

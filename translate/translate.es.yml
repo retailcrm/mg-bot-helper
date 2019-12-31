@@ -33,9 +33,12 @@ error_save: Error al guardar, contacte con el soporte técnico
 error_delete: Error al eliminar, póngase en contacto con el soporte técnico
 missing_credentials: "Required methods: {{.Credentials}}"
 error_activity_mg: Compruebe que la integración con  retailCRM Chat está habilitada en Ajustes de CRM
+incorrect_csrf_token: Token CSRF incorrecto, por favor actualice esta página
 
-crm_link: "<a href='//www.retailcrm.pro' title='retailCRM'>retailCRM</a>"
-doc_link: "<a href='//www.retailcrm.pro/docs' target='_blank'>documentación</a>"
+crm_link_url: "https://www.retailcrm.pro"
+crm_link_title: "retailCRM"
+doc_link_url: "https://help.retailcrm.pro/docs"
+doc_link_title: "documentación"
 
 set_name_or_article: Indique el nombre o el número de artículo
 product_response: "Nombre: {{.Name}}\nStock: {{.Quantity}} piezas\nPrecio: {{.Price}} {{.Currency}}\nImagen: {{.ImageURL}}"

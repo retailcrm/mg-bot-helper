@@ -8,45 +8,58 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"path"
 	"strings"
 	"testing"
 
-	"github.com/gin-gonic/gin"
 	"github.com/h2non/gock"
+	"github.com/retailcrm/mg-bot-helper/src/models"
+	"github.com/retailcrm/mg-transport-core/core"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 )
 
 var (
-	router   *gin.Engine
 	crmUrl   = "https://test.retailcrm.ru"
 	clientID = "09385039f039irf039fkj309fj30jf3"
 )
 
 func init() {
+	configPath := path.Clean("./../config_test.yml")
+	info, err := os.Stat(configPath)
+	if configPath == "/" || configPath == "." || err != nil || info.IsDir() {
+		configPath = path.Clean("./config_test.yml")
+	}
+
+	if configPath == "/" || configPath == "." {
+		panic("config_test.yml not found")
+	}
+
+	initVariables(configPath)
+	app.Router().HTMLRender = nil
+
+	initialize(false)
 	os.Chdir("../")
-	config = LoadConfig("config_test.yml")
-	orm = NewDb(config)
-	logger = newLogger()
-	router = setup()
 }
 
 func TestMain(m *testing.M) {
-	c := Connection{
-		ID:       1,
-		ClientID: clientID,
-		APIKEY:   "ii32if32iuf23iufn2uifnr23inf",
-		APIURL:   crmUrl,
-		MGURL:    "https://test.retailcrm.pro",
-		MGToken:  "988730985u23r390rf8j3984jf32904fj",
-		Active:   true,
+	c := models.Connection{
+		Connection: core.Connection{
+			ID:        1,
+			ClientID:  clientID,
+			Key:       "ii32if32iuf23iufn2uifnr23inf",
+			URL:       crmUrl,
+			GateURL:   "https://test.retailcrm.pro",
+			GateToken: "988730985u23r390rf8j3984jf32904fj",
+			Active:    true,
+		},
 	}
 
-	orm.DB.Delete(Connection{}, "id > ?", 0)
+	app.DB.Delete(models.Connection{}, "id > ?", 0)
 
-	c.createConnection()
+	c.CreateConnection()
 	retCode := m.Run()
-	orm.DB.Delete(Connection{}, "id > ?", 0)
+	app.DB.Delete(models.Connection{}, "id > ?", 0)
 	os.Exit(retCode)
 }
 
@@ -56,7 +69,7 @@ func TestRouting_connectHandler(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	router.ServeHTTP(rr, req)
+	app.Router().ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code,
 		fmt.Sprintf("handler returned wrong status code: got %v want %v", rr.Code, http.StatusOK))
@@ -69,7 +82,7 @@ func TestRouting_settingsHandler(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	router.ServeHTTP(rr, req)
+	app.Router().ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code,
 		fmt.Sprintf("handler returned wrong status code: got %v want %v", rr.Code, http.StatusOK))
@@ -97,7 +110,7 @@ func TestRouting_saveHandler(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	router.ServeHTTP(rr, req)
+	app.Router().ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code,
 		fmt.Sprintf("handler returned wrong status code: got %v want %v", rr.Code, http.StatusOK))
@@ -138,7 +151,7 @@ func TestRouting_activityHandler(t *testing.T) {
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 		rr := httptest.NewRecorder()
-		router.ServeHTTP(rr, req)
+		app.Router().ServeHTTP(rr, req)
 
 		assert.Equal(t, http.StatusOK, rr.Code,
 			fmt.Sprintf("handler returned wrong status code: got %v want %v", rr.Code, http.StatusOK))
@@ -155,7 +168,7 @@ func TestRouting_activityHandler(t *testing.T) {
 			t.Error("worker don`t stop")
 		}
 
-		if ok && w.connection.APIURL != v.Get("systemUrl") {
+		if ok && w.connection.URL != v.Get("systemUrl") {
 			t.Error("fail update systemUrl")
 		}
 	}
