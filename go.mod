@@ -13,14 +13,12 @@ require (
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/retailcrm/api-client-go v1.3.0
 	github.com/retailcrm/mg-bot-api-client-go v1.0.16
-	github.com/retailcrm/mg-transport-core v1.2.0
+	github.com/retailcrm/mg-transport-core v1.3.0
 	github.com/rs/cors v1.7.0
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/text v0.3.2
 	gopkg.in/gormigrate.v1 v1.6.0
 	gopkg.in/yaml.v2 v2.2.7
 )
-
-replace github.com/retailcrm/mg-transport-core => /mg-transport-core
 
 go 1.13

@@ -19,7 +19,6 @@ services:
         volumes:
             - ./:/mg-bot/
             - ./static:/static/
-            - /home/pavel/mg-transports/mg-transport-core:/mg-transport-core
         links:
             - postgres
         ports:

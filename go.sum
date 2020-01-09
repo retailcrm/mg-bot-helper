@@ -199,6 +199,8 @@ github.com/retailcrm/mg-bot-api-client-go v1.0.16 h1:l7xzGp0IQTR+jJ//x3vDBz/jHnO
 github.com/retailcrm/mg-bot-api-client-go v1.0.16/go.mod h1:lJD4+WLi9CiOk4/2GUvmJ6LG4168eoilXAbfT61yK1U=
 github.com/retailcrm/mg-transport-api-client-go v1.1.32 h1:IBPltSoD5q2PPZJbNC/prK5F9rEVPXVx/ZzDpi7HKhs=
 github.com/retailcrm/mg-transport-api-client-go v1.1.32/go.mod h1:AWV6BueE28/6SCoyfKURTo4lF0oXYoOKmHTzehd5vAI=
+github.com/retailcrm/mg-transport-core v1.3.0 h1:/N5LLJVU5iP8LWc8lbo7JPj6y+hEHB62adiqi/7VoZw=
+github.com/retailcrm/mg-transport-core v1.3.0/go.mod h1:+LbNIhVgq64VPX0owJdNPLvO217Q/GE/Zsp+cZ1sHtw=
 github.com/rogpeppe/go-internal v1.1.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/rogpeppe/go-internal v1.3.2/go.mod h1:xXDCJY+GAPziupqXw64V24skbSoqbTEfhy4qGm1nDQc=
