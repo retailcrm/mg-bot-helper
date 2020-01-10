@@ -1,8 +1,6 @@
 package migrations
 
 import (
-	"errors"
-
 	"github.com/jinzhu/gorm"
 	"github.com/retailcrm/mg-bot-helper/src/models"
 	"github.com/retailcrm/mg-transport-core/core"
@@ -16,7 +14,7 @@ func init() {
 			return db.AutoMigrate(models.Connection{}).Error
 		},
 		Rollback: func(db *gorm.DB) error {
-			return errors.New("this migration cannot be rolled back")
+			return nil
 		},
 	})
 }

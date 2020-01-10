@@ -1,8 +1,6 @@
 package migrations
 
 import (
-	"errors"
-
 	"github.com/jinzhu/gorm"
 	"github.com/retailcrm/mg-transport-core/core"
 	"gopkg.in/gormigrate.v1"
@@ -13,13 +11,17 @@ func init() {
 		ID: "1577785798",
 		Migrate: func(db *gorm.DB) error {
 			if db.HasTable("schema_migrations") {
-				return db.DropTable("schema_migrations").Error
+				return db.Exec("ALTER TABLE schema_migrations RENAME TO schema_migrations_old;").Error
 			}
 
 			return nil
 		},
 		Rollback: func(db *gorm.DB) error {
-			return errors.New("this migration cannot be rolled back")
+			if db.HasTable("schema_migrations_old") {
+				return db.Exec("ALTER TABLE schema_migrations_old RENAME TO schema_migrations;").Error
+			}
+
+			return nil
 		},
 	})
 }
