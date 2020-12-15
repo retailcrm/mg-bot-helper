@@ -7,7 +7,7 @@ table_activity: Активность
 api_key: API Ключ
 api_url: Адрес CRM
 add_bot: Добавить бота
-title: Модуль подключения mg-bot к retailCRM
+title: Модуль подключения mg-bot к RetailCRM
 successful: Данные успешно обновлены
 language: Язык
 
@@ -32,9 +32,9 @@ error_adding_bot: Ошибка при добавлении бота
 error_save: Ошибка при сохранении, обратитесь в службу технической поддержки
 error_delete: Ошибка при удалении, обратитесь в службу технической поддержки
 missing_credentials: "Необходимые методы: {{.Credentials}}"
-error_activity_mg: Проверьте активность интеграции с retailCRM Chat в настройках CRM
+error_activity_mg: Проверьте активность интеграции с RetailCRM Chat в настройках CRM
 
-crm_link: "<a href='//www.retailcrm.ru' title='retailCRM'>retailCRM</a>"
+crm_link: "<a href='//www.retailcrm.ru' title='RetailCRM'>RetailCRM</a>"
 doc_link: "<a href='//www.retailcrm.ru/docs' target='_blank'>документация</a>"
 
 set_name_or_article: Укажите название или артикул товара
