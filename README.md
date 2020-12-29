@@ -1,2 +1,2 @@
 # mg-bot-helper
-https://help.retailcrm.ru/Users/MgBotInfo
+https://docs.retailcrm.ru/Users/Chats/Bots/Assistant
