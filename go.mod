@@ -20,9 +20,8 @@ require (
 	github.com/go-sql-driver/mysql v1.4.0 // indirect
 	github.com/golang-migrate/migrate v3.4.0+incompatible
 	github.com/golang/protobuf v1.2.0 // indirect
-	github.com/google/go-cmp v0.2.0 // indirect
 	github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135 // indirect
-	github.com/gorilla/websocket v1.4.0
+	github.com/gorilla/websocket v1.4.1
 	github.com/h2non/gock v1.0.9
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/jinzhu/gorm v1.9.1
@@ -43,7 +42,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/retailcrm/api-client-go v1.1.2
 	github.com/retailcrm/mg-bot-api-client-go v1.0.16
-	github.com/stevvooe/resumable v0.0.0-20180830230917-22b14a53ba50 // indirect
 	github.com/stretchr/testify v1.2.2
 	github.com/ugorji/go v1.1.1 // indirect
 	golang.org/x/crypto v0.0.0-20180830192347-182538f80094 // indirect
